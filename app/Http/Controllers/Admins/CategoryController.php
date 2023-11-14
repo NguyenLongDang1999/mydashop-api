@@ -52,7 +52,7 @@ class CategoryController extends Controller
         $validatedData = $request->validated();
 
         try {
-            $validatedData['image_uri'] = storageUploadFile($this->path, $validatedData['name'], $request);
+            $validatedData['image_uri'] = storageUploadFile($this->path, $validatedData['slug'], $request);
             $this->category->create($validatedData);
 
             return response()->json(['message' => 'success'], 201);
@@ -93,7 +93,7 @@ class CategoryController extends Controller
         $validatedData = $request->validated();
 
         try {
-            $validatedData['image_uri'] = storageUploadFile($this->path, $validatedData['name'], $request);
+            $validatedData['image_uri'] = storageUploadFile($this->path, $validatedData['slug'], $request);
             $data->update($validatedData);
 
             return response()->json(['message' => 'success'], 204);
