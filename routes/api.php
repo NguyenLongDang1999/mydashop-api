@@ -1,12 +1,14 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
 // ** Admins
 use App\Http\Controllers\Admins\AuthController;
 use App\Http\Controllers\Admins\CategoryController;
 use App\Http\Controllers\Admins\BrandController;
-
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admins\AttributeController;
+use App\Http\Controllers\Admins\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +57,47 @@ Route::prefix('admin')->group(function () {
             // ** Brand
             Route::controller(BrandController::class)
                 ->prefix('brand')
+                ->group(function () {
+                    // ** Data List
+                    Route::get('/', 'index');
+                    Route::get('data-list', 'dataList');
+                    Route::get('data-list-category/{id}', 'dataListCategory');
+
+                    // ** Store
+                    Route::post('/', 'store');
+
+                    // ** Update
+                    Route::get('{id}', 'show');
+                    Route::patch('{id}', 'update');
+
+                    // ** Remove
+                    Route::patch('remove/{id}', 'remove');
+                });
+
+            // ** Attribute
+            Route::controller(AttributeController::class)
+                ->prefix('attribute')
+                ->group(function () {
+                    // ** Data List
+                    Route::get('/', 'index');
+                    Route::get('data-list', 'dataList');
+                    Route::get('data-list-category/{id}', 'dataListCategory');
+                    Route::get('attribute-value-data-list/{id}', 'dataListAttributeValues');
+
+                    // ** Store
+                    Route::post('/', 'store');
+
+                    // ** Update
+                    Route::get('{id}', 'show');
+                    Route::patch('{id}', 'update');
+
+                    // ** Remove
+                    Route::patch('remove/{id}', 'remove');
+                });
+
+            // ** Product
+            Route::controller(ProductController::class)
+                ->prefix('product')
                 ->group(function () {
                     // ** Data List
                     Route::get('/', 'index');

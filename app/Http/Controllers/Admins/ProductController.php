@@ -3,21 +3,21 @@
 namespace App\Http\Controllers\Admins;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admins\BrandRequest;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\Brand;
+use App\Http\Requests\Admins\ProductRequest;
+use Illuminate\Http\JsonResponse;
+use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 
-class BrandController extends Controller
+class ProductController extends Controller
 {
     private string $path;
-    private Brand $brand;
+    private Product $product;
 
-    public function __construct(Brand $brand)
+    public function __construct(Product $product)
     {
-        $this->brand = $brand;
-        $this->path = 'brand';
+        $this->product = $product;
+        $this->path = 'product';
     }
 
     public function index(Request $request): JsonResponse
@@ -26,7 +26,7 @@ class BrandController extends Controller
 
         try {
             return response()->json(
-                $this->brand->getListDatatable($input)
+                $this->product->getListDatatable($input)
             );
         } catch (\Exception $e) {
             return response()->json([
@@ -35,35 +35,7 @@ class BrandController extends Controller
         }
     }
 
-    public function dataList(): JsonResponse
-    {
-        try {
-            return response()->json(
-                $this->brand->getBrandList()
-            );
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function dataListCategory(string $id): JsonResponse
-    {
-        try {
-            $data = $this->brand->whereHas('categories', function ($query) use ($id) {
-                $query->where('category_id', $id);
-            })->get();
-
-            return response()->json($data);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function store(BrandRequest $request): JsonResponse
+    public function store(ProductRequest $request): JsonResponse
     {
         $validatedData = $request->validated();
 
@@ -72,8 +44,7 @@ class BrandController extends Controller
 
             DB::beginTransaction();
 
-            $data = $this->brand->create($validatedData);
-            $data->categories()->attach(json_decode($validatedData['category_id']));
+            $this->product->create($validatedData);
 
             DB::commit();
 
@@ -90,19 +61,28 @@ class BrandController extends Controller
     public function show(string $id): JsonResponse
     {
         try {
-            $data = $this->brand->whereId($id)->firstOrFail([
+            $data = $this->product->whereId($id)->firstOrFail([
                 'id',
+                'sku',
                 'name',
                 'slug',
+                'category_id',
+                'brand_id',
+                'price',
+                'quantity',
+                'special_price',
+                'special_price_type',
                 'image_uri',
+                'short_description',
                 'description',
+                'technical_specifications',
                 'status',
                 'popular',
                 'meta_title',
                 'meta_description'
             ]);
 
-            $data['category_id'] = $data->categories()->pluck('id')->toArray();
+            $data['technical_specifications'] = json_decode($data['technical_specifications'], true);
 
             return response()->json($data);
         } catch (\Exception $e) {
@@ -112,9 +92,9 @@ class BrandController extends Controller
         }
     }
 
-    public function update(BrandRequest $request, string $id): JsonResponse
+    public function update(ProductRequest $request, string $id): JsonResponse
     {
-        $data = $this->brand->findOrFail($id);
+        $data = $this->product->findOrFail($id);
         $validatedData = $request->validated();
 
         try {
@@ -123,7 +103,6 @@ class BrandController extends Controller
             DB::beginTransaction();
 
             $data->update($validatedData);
-            $data->categories()->sync(json_decode($validatedData['category_id']));
 
             DB::commit();
 
@@ -137,9 +116,9 @@ class BrandController extends Controller
         }
     }
 
-    public function remove(string $id): JsonResponse
+    public function delete(string $id): JsonResponse
     {
-        $data = $this->brand->findOrFail($id);
+        $data = $this->product->findOrFail($id);
 
         try {
             $data->delete();

@@ -1,0 +1,97 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Product extends Model
+{
+    use HasFactory;
+
+    public $table = 'product';
+
+    protected $fillable = [
+        'sku',
+        'name',
+        'slug',
+        'category_id',
+        'brand_id',
+        'image_uri',
+        'price',
+        'special_price',
+        'special_price_type',
+        'selling_price',
+        'quantity',
+        'status',
+        'popular',
+        'technical_specifications',
+        'short_description',
+        'description',
+        'meta_title',
+        'meta_description'
+    ];
+
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function relatedProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'product_related', 'product_id', 'product_related_id');
+    }
+
+    public function upsellProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'product_upsell', 'product_id', 'product_upsell_id');
+    }
+
+    public function crossSellProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'product_cross_sell', 'product_id', 'product_cross_sell_id');
+    }
+
+    public function getListDatatable($input): array
+    {
+        $query = Product::select('id', 'name', 'category_id', 'brand_id', 'price', 'special_price', 'special_price_type', 'selling_price', 'image_uri', 'status', 'popular')
+            ->with([
+                'brand:id,name,image_uri',
+                'category:id,name,image_uri',
+            ])
+            ->when(isset($input['name']), function (Builder $query) use ($input) {
+                $query->where('name', 'like', '%' . $input['name'] . '%');
+            })
+            ->when(isset($input['category_id']), function (Builder $query) use ($input) {
+                $query->where('category_id', $input['category_id']);
+            })
+            ->when(isset($input['brand_id']), function (Builder $query) use ($input) {
+                $query->where('brand_id', $input['brand_id']);
+            })
+            ->when(isset($input['status']), function (Builder $query) use ($input) {
+                $query->where('status', $input['status']);
+            })
+            ->when(isset($input['popular']), function (Builder $query) use ($input) {
+                $query->where('popular', $input['popular']);
+            });
+
+        $data['aggregations'] = $query->count();
+
+        $data['data'] = $query
+            ->latest()
+            ->skip(($input['page'] - 1) * $input['pageSize'])
+            ->take($input['pageSize'])
+            ->get();
+
+        return $data;
+    }
+}

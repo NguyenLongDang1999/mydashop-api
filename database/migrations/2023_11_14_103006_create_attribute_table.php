@@ -37,7 +37,6 @@ return new class extends Migration
 
             $table->foreign('attribute_id')->references('id')->on('attribute')->onDelete('cascade');
         });
-
     }
 
     /**

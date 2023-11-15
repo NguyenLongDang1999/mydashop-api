@@ -3,21 +3,19 @@
 namespace App\Http\Controllers\Admins;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admins\BrandRequest;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\Brand;
+use App\Http\Requests\Admins\AttributeRequest;
+use Illuminate\Http\JsonResponse;
+use App\Models\Attribute;
 use Illuminate\Support\Facades\DB;
 
-class BrandController extends Controller
+class AttributeController extends Controller
 {
-    private string $path;
-    private Brand $brand;
+    private Attribute $attribute;
 
-    public function __construct(Brand $brand)
+    public function __construct(Attribute $attribute)
     {
-        $this->brand = $brand;
-        $this->path = 'brand';
+        $this->attribute = $attribute;
     }
 
     public function index(Request $request): JsonResponse
@@ -26,20 +24,7 @@ class BrandController extends Controller
 
         try {
             return response()->json(
-                $this->brand->getListDatatable($input)
-            );
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function dataList(): JsonResponse
-    {
-        try {
-            return response()->json(
-                $this->brand->getBrandList()
+                $this->attribute->getListDatatable($input)
             );
         } catch (\Exception $e) {
             return response()->json([
@@ -51,7 +36,7 @@ class BrandController extends Controller
     public function dataListCategory(string $id): JsonResponse
     {
         try {
-            $data = $this->brand->whereHas('categories', function ($query) use ($id) {
+            $data = $this->attribute->whereHas('categories', function ($query) use ($id) {
                 $query->where('category_id', $id);
             })->get();
 
@@ -63,16 +48,37 @@ class BrandController extends Controller
         }
     }
 
-    public function store(BrandRequest $request): JsonResponse
+    public function dataListAttributeValues(string $id): JsonResponse
+    {
+        try {
+            $attribute = Attribute::with('attributeValues')->find($id);
+
+            return response()->json($attribute->attributeValues->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->value,
+                ];
+            }));
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function store(AttributeRequest $request): JsonResponse
     {
         $validatedData = $request->validated();
 
         try {
-            $validatedData['image_uri'] = storageUploadFile($this->path, $validatedData['slug'], $request);
-
             DB::beginTransaction();
 
-            $data = $this->brand->create($validatedData);
+            $data = $this->attribute->create($validatedData);
+            $attributeValues = collect(json_decode($validatedData['attribute_value_id']))
+                ->map(fn ($item) => ['value' => $item])
+                ->toArray();
+
+            $data->attributeValues()->createMany($attributeValues);
             $data->categories()->attach(json_decode($validatedData['category_id']));
 
             DB::commit();
@@ -90,18 +96,15 @@ class BrandController extends Controller
     public function show(string $id): JsonResponse
     {
         try {
-            $data = $this->brand->whereId($id)->firstOrFail([
+            $data = $this->attribute->whereId($id)->firstOrFail([
                 'id',
                 'name',
                 'slug',
-                'image_uri',
                 'description',
                 'status',
-                'popular',
-                'meta_title',
-                'meta_description'
             ]);
 
+            $data['attribute_value_id'] = $data->attributeValues->map->only(['id', 'value'])->toArray();
             $data['category_id'] = $data->categories()->pluck('id')->toArray();
 
             return response()->json($data);
@@ -112,18 +115,17 @@ class BrandController extends Controller
         }
     }
 
-    public function update(BrandRequest $request, string $id): JsonResponse
+    public function update(AttributeRequest $request, string $id): JsonResponse
     {
-        $data = $this->brand->findOrFail($id);
+        $data = $this->attribute->findOrFail($id);
         $validatedData = $request->validated();
 
         try {
-            $validatedData['image_uri'] = storageUploadFile($this->path, $validatedData['slug'], $request);
-
             DB::beginTransaction();
 
             $data->update($validatedData);
             $data->categories()->sync(json_decode($validatedData['category_id']));
+            $data->updateOrCreateMany(json_decode($validatedData['attribute_value_id']) ?? []);
 
             DB::commit();
 
@@ -137,9 +139,9 @@ class BrandController extends Controller
         }
     }
 
-    public function remove(string $id): JsonResponse
+    public function delete(string $id): JsonResponse
     {
-        $data = $this->brand->findOrFail($id);
+        $data = $this->attribute->findOrFail($id);
 
         try {
             $data->delete();
