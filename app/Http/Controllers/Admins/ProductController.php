@@ -141,6 +141,19 @@ class ProductController extends Controller
 
             $data->update($validatedData);
 
+            $productAttributes = [];
+            $attributes = json_decode($validatedData['attributes'], true);
+
+            foreach ($attributes as $attributeItem) {
+                $productAttributes[] = [
+                    'attribute_id' => $attributeItem['id'],
+                    'attribute_value_id' => $attributeItem['attribute_value_id']
+                ];
+            }
+
+            $data->productAttributes()->delete();
+            $data->productAttributes()->createMany($productAttributes);
+
             DB::commit();
 
             return response()->json(['message' => 'success'], 204);
@@ -153,7 +166,7 @@ class ProductController extends Controller
         }
     }
 
-    public function delete(string $id): JsonResponse
+    public function remove(string $id): JsonResponse
     {
         $data = $this->product->findOrFail($id);
 

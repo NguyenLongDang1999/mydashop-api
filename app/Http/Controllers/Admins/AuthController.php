@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admins;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admins\AdminRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
@@ -33,7 +34,7 @@ class AuthController extends Controller
         }
     }
 
-    public function signOut(AdminRequest $request): JsonResponse
+    public function signOut(Request $request): JsonResponse
     {
         try {
             $request->user()->currentAccessToken()->delete();
