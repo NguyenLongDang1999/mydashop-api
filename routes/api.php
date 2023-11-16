@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admins\FlashSaleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -96,6 +97,24 @@ Route::prefix('admin')->group(function () {
                     Route::patch('remove/{id}', 'remove');
                 });
 
+            // ** Flash Sale
+            Route::controller(FlashSaleController::class)
+                ->prefix('flash-sale')
+                ->group(function () {
+                    // ** Data List
+                    Route::get('/', 'index');
+
+                    // ** Store
+                    Route::post('/', 'store');
+
+                    // ** Update
+                    Route::get('{id}', 'show');
+                    Route::patch('{id}', 'update');
+
+                    // ** Remove
+                    Route::patch('remove/{id}', 'remove');
+                });
+
             // ** Product
             Route::controller(ProductController::class)
                 ->prefix('product')
@@ -121,7 +140,6 @@ Route::prefix('admin')->group(function () {
                 ->group(function () {
                     // ** Data List
                     Route::get('/', 'index');
-                    Route::get('data-list', 'dataList');
 
                     // ** Store
                     Route::post('/', 'store');

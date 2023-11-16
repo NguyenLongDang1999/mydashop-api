@@ -11,15 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('flash-sale', function (Blueprint $table) {
+        Schema::create('flash_sale', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('slug')->unique();
-            $table->string('image_uri')->nullable();
-            $table->text('description')->nullable();
-            $table->unsignedTinyInteger('status')->default(20)->index();
+            $table->dateTime('start_time');
+            $table->dateTime('end_time');
+            $table->unsignedTinyInteger('discount_percentage');
             $table->timestamps();
-            $table->softDeletes();
+        });
+
+        Schema::create('product_flash_sale', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('product_id');
+            $table->unsignedBigInteger('flash_sale_id');
+            $table->decimal('price', 18, 0);
+            $table->unsignedInteger('quantity');
+            $table->timestamps();
+
+            $table->foreign('product_id')->references('id')->on('product')->onDelete('cascade');
+            $table->foreign('flash_sale_id')->references('id')->on('flash_sale')->onDelete('cascade');
         });
     }
 
@@ -28,6 +38,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('flash-sale');
+        Schema::dropIfExists('flash_sale');
+        Schema::dropIfExists('product_flash_sale');
     }
 };

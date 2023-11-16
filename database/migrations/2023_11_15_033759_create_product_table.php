@@ -28,7 +28,7 @@ return new class extends Migration
             $table->decimal('selling_price', 18, 0)->default(0)->nullable();
             $table->unsignedTinyInteger('special_price_type')->default(10)->nullable();
             $table->unsignedTinyInteger('in_stock')->default(10)->nullable();
-            $table->unsignedBigInteger('quantity')->default(0)->nullable();
+            $table->unsignedInteger('quantity')->default(0)->nullable();
             $table->unsignedTinyInteger('status')->default(20)->index();
             $table->unsignedTinyInteger('popular')->default(20)->index();
             $table->string('meta_title')->nullable();

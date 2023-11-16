@@ -68,11 +68,14 @@ class Product extends Model
 
     public function getListDatatable($input): array
     {
-        $query = Product::select('id', 'name', 'category_id', 'brand_id', 'price', 'special_price', 'special_price_type', 'selling_price', 'image_uri', 'status', 'popular')
+        $query = Product::select('id', 'sku', 'name', 'category_id', 'brand_id', 'price', 'special_price', 'special_price_type', 'selling_price', 'image_uri', 'status', 'popular')
             ->with([
                 'brand:id,name,image_uri',
                 'category:id,name,image_uri',
             ])
+            ->when(isset($input['sku']), function (Builder $query) use ($input) {
+                $query->where('sku', 'like', '%' . $input['sku'] . '%');
+            })
             ->when(isset($input['name']), function (Builder $query) use ($input) {
                 $query->where('name', 'like', '%' . $input['name'] . '%');
             })
@@ -98,5 +101,21 @@ class Product extends Model
             ->get();
 
         return $data;
+    }
+
+    public function getProductList(): array
+    {
+        $getProductList = Product::select('id', 'name', 'image_uri')->get();
+        $optionList = [];
+
+        foreach ($getProductList as $item) {
+            $optionList[] = [
+                'id' => $item->id,
+                'name' => $item->name,
+                'image_uri' => $item->image_uri
+            ];
+        }
+
+        return $optionList;
     }
 }

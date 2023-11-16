@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admins;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProductAttribute;
 use Illuminate\Http\Request;
 use App\Http\Requests\Admins\ProductRequest;
 use Illuminate\Http\JsonResponse;
@@ -14,12 +13,10 @@ class ProductController extends Controller
 {
     private string $path;
     private Product $product;
-    private ProductAttribute $productAttribute;
 
-    public function __construct(Product $product, ProductAttribute $productAttribute)
+    public function __construct(Product $product)
     {
         $this->product = $product;
-        $this->productAttribute = $productAttribute;
         $this->path = 'product';
     }
 
@@ -30,6 +27,19 @@ class ProductController extends Controller
         try {
             return response()->json(
                 $this->product->getListDatatable($input)
+            );
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function dataList(): JsonResponse
+    {
+        try {
+            return response()->json(
+                $this->product->getProductList()
             );
         } catch (\Exception $e) {
             return response()->json([
