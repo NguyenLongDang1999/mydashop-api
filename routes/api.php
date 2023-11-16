@@ -9,6 +9,7 @@ use App\Http\Controllers\Admins\CategoryController;
 use App\Http\Controllers\Admins\BrandController;
 use App\Http\Controllers\Admins\AttributeController;
 use App\Http\Controllers\Admins\ProductController;
+use App\Http\Controllers\Admins\SliderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -108,6 +109,24 @@ Route::prefix('admin')->group(function () {
 
                     // ** Update
                     Route::get('{id}', 'show');
+                    Route::patch('{id}', 'update');
+
+                    // ** Remove
+                    Route::patch('remove/{id}', 'remove');
+                });
+
+            // ** Slider
+            Route::controller(SliderController::class)
+                ->prefix('slider')
+                ->group(function () {
+                    // ** Data List
+                    Route::get('/', 'index');
+                    Route::get('data-list', 'dataList');
+
+                    // ** Store
+                    Route::post('/', 'store');
+
+                    // ** Update
                     Route::patch('{id}', 'update');
 
                     // ** Remove
