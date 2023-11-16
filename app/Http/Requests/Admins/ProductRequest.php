@@ -28,6 +28,7 @@ class ProductRequest extends FormRequest
             'slug' => ['required', Rule::unique('product')->ignore($this->id)],
             'category_id' => 'required|integer',
             'technical_specifications' => 'nullable|string',
+            'attributes' => 'nullable|string',
             'brand_id' => 'nullable|integer',
             'status' => 'nullable|integer',
             'popular' => 'nullable|integer',

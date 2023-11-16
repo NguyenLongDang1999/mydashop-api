@@ -46,6 +46,11 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function productAttributes(): HasMany
+    {
+        return $this->hasMany(ProductAttribute::class);
+    }
+
     public function relatedProducts(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'product_related', 'product_id', 'product_related_id');
