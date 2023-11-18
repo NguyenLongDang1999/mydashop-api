@@ -22,13 +22,10 @@ class FlashSaleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|max:255',
-            'discount_percentage' => 'nullable|integer',
-            'status' => 'nullable|integer',
-            'popular' => 'nullable|integer',
-            'description' => 'nullable|max:160',
-            'meta_title' => 'nullable|max:60',
-            'meta_description' => 'nullable|max:160',
+//            'name' => 'required|max:255',
+//            'discount_percentage' => 'nullable|integer',
+//            'start_time' => 'nullable|string',
+//            'end_time' => 'nullable|string',
         ];
     }
 }

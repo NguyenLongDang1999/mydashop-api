@@ -23,7 +23,7 @@ class FlashSale extends Model
     {
         $query = FlashSale::select('id', 'name')
             ->when(isset($input['name']), function (Builder $query) use ($input) {
-                $query->where('name', 'like', '%' . $input['name'] . '%');
+                $query->where('name', 'ilike', '%' . $input['name'] . '%');
             });
 
         $data['aggregations'] = $query->count();

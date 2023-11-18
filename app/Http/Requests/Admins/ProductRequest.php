@@ -53,16 +53,16 @@ class ProductRequest extends FormRequest
 
     private function sellingPrice(): int
     {
-        $discount = 0;
+            $discount = 0;
 
-        if (intval($this->special_price_type) === config('constants.special_type.percent')) {
-            $discount = ($this->price / 100) * $this->special_price;
-        }
+            if (intval($this->special_price_type) === config('constants.special_type.percent')) {
+                $discount = ($this->price / 100) * $this->special_price;
+            }
 
-        if (intval($this->special_price_type) === config('constants.special_type.fixed')) {
-            $discount = $this->special_price;
-        }
+            if (intval($this->special_price_type) === config('constants.special_type.fixed')) {
+                $discount = $this->special_price;
+            }
 
-        return $this->price - intval($discount);
+            return $this->price - intval($discount);
     }
 }

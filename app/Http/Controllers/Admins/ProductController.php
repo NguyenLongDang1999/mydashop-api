@@ -59,17 +59,19 @@ class ProductController extends Controller
 
             $product = $this->product->create($validatedData);
 
-            $productAttributes = [];
-            $attributes = json_decode($validatedData['attributes'], true);
+            if ($validatedData['attributes']) {
+                $productAttributes = [];
+                $attributes = json_decode($validatedData['attributes'], true);
 
-            foreach ($attributes as $attributeItem) {
-                $productAttributes[] = [
-                    'attribute_id' => $attributeItem['id'],
-                    'attribute_value_id' => $attributeItem['attribute_value_id']
-                ];
+                foreach ($attributes as $attributeItem) {
+                    $productAttributes[] = [
+                        'attribute_id' => $attributeItem['id'],
+                        'attribute_value_id' => $attributeItem['attribute_value_id']
+                    ];
+                }
+
+                $product->productAttributes()->createMany($productAttributes);
             }
-
-            $product->productAttributes()->createMany($productAttributes);
 
             DB::commit();
 
@@ -151,18 +153,20 @@ class ProductController extends Controller
 
             $data->update($validatedData);
 
-            $productAttributes = [];
-            $attributes = json_decode($validatedData['attributes'], true);
+            if ($validatedData['attributes']) {
+                $productAttributes = [];
+                $attributes = json_decode($validatedData['attributes'], true);
 
-            foreach ($attributes as $attributeItem) {
-                $productAttributes[] = [
-                    'attribute_id' => $attributeItem['id'],
-                    'attribute_value_id' => $attributeItem['attribute_value_id']
-                ];
+                foreach ($attributes as $attributeItem) {
+                    $productAttributes[] = [
+                        'attribute_id' => $attributeItem['id'],
+                        'attribute_value_id' => $attributeItem['attribute_value_id']
+                    ];
+                }
+
+                $data->productAttributes()->delete();
+                $data->productAttributes()->createMany($productAttributes);
             }
-
-            $data->productAttributes()->delete();
-            $data->productAttributes()->createMany($productAttributes);
 
             DB::commit();
 
