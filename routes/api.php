@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admins\CouponsController;
 use App\Http\Controllers\Admins\FlashSaleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -109,6 +110,23 @@ Route::prefix('admin')->group(function () {
 
                     // ** Update
                     Route::get('{id}', 'show');
+                    Route::patch('{id}', 'update');
+
+                    // ** Remove
+                    Route::patch('remove/{id}', 'remove');
+                });
+
+            // ** Coupons
+            Route::controller(CouponsController::class)
+                ->prefix('coupons')
+                ->group(function () {
+                    // ** Data List
+                    Route::get('/', 'index');
+
+                    // ** Store
+                    Route::post('/', 'store');
+
+                    // ** Update
                     Route::patch('{id}', 'update');
 
                     // ** Remove

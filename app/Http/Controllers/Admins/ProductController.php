@@ -60,17 +60,15 @@ class ProductController extends Controller
             $product = $this->product->create($validatedData);
 
             if ($validatedData['attributes']) {
-                $productAttributes = [];
                 $attributes = json_decode($validatedData['attributes'], true);
 
                 foreach ($attributes as $attributeItem) {
-                    $productAttributes[] = [
+                    $product->productAttributes()->create([
                         'attribute_id' => $attributeItem['id'],
-                        'attribute_value_id' => $attributeItem['attribute_value_id']
-                    ];
+                    ])->productAttributeValues()->createMany(
+                        array_map(fn ($valueId) => ['attribute_value_id' => $valueId], $attributeItem['attribute_value_id'])
+                    );
                 }
-
-                $product->productAttributes()->createMany($productAttributes);
             }
 
             DB::commit();
@@ -88,44 +86,52 @@ class ProductController extends Controller
     public function show(string $id): JsonResponse
     {
         try {
-            $product = $this->product->with('productAttributes.attribute')->whereId($id)->firstOrFail([
-                'id',
-                'sku',
-                'name',
-                'slug',
-                'category_id',
-                'brand_id',
-                'price',
-                'quantity',
-                'special_price',
-                'special_price_type',
-                'image_uri',
-                'short_description',
-                'description',
-                'technical_specifications',
-                'status',
-                'popular',
-                'meta_title',
-                'meta_description'
-            ]);
+            $product = $this->product
+                ->with([
+                    'productAttributes' => function ($query) {
+                        $query->with('productAttributeValues', 'attribute:id,name');
+                    }
+                ])
+                ->select([
+                    'id',
+                    'sku',
+                    'name',
+                    'slug',
+                    'category_id',
+                    'brand_id',
+                    'price',
+                    'quantity',
+                    'special_price',
+                    'special_price_type',
+                    'image_uri',
+                    'short_description',
+                    'description',
+                    'technical_specifications',
+                    'status',
+                    'popular',
+                    'meta_title',
+                    'meta_description'
+                ])
+                ->findOrFail($id);
 
             $data = $product->toArray();
 
             $attributes = [];
 
             foreach ($data['product_attributes'] as $item) {
-                $attrId = $item['attribute_id'];
-                $attrValueId = $item['attribute_value_id'];
+                $attrId = $item['attribute']['id'];
                 $attrValueName = $item['attribute']['name'];
+
+                $attrValues = array_column($item['product_attribute_values'], 'attribute_value_id');
 
                 if (!isset($attributes[$attrId])) {
                     $attributes[$attrId] = [
-                        'values' => [$attrValueId],
+                        'values' => $attrValues,
                         'name' => $attrValueName,
                         'id' => $attrId,
                     ];
                 } else {
-                    $attributes[$attrId]['values'][] = $attrValueId;
+                    $attributes[$attrId]['values'] = array_merge($attributes[$attrId]['values'], $attrValues);
                     $attributes[$attrId]['name'] = $attrValueName;
                 }
             }
@@ -154,18 +160,20 @@ class ProductController extends Controller
             $data->update($validatedData);
 
             if ($validatedData['attributes']) {
-                $productAttributes = [];
                 $attributes = json_decode($validatedData['attributes'], true);
 
-                foreach ($attributes as $attributeItem) {
-                    $productAttributes[] = [
-                        'attribute_id' => $attributeItem['id'],
-                        'attribute_value_id' => $attributeItem['attribute_value_id']
-                    ];
-                }
-
                 $data->productAttributes()->delete();
-                $data->productAttributes()->createMany($productAttributes);
+
+                foreach ($attributes as $attributeItem) {
+                    $productAttribute = $data->productAttributes()->create([
+                        'attribute_id' => $attributeItem['id'],
+                    ]);
+
+                    if (isset($attributeItem['attribute_value_id']) && is_array($attributeItem['attribute_value_id'])) {
+                        $attributeValues = array_map(fn ($valueId) => ['attribute_value_id' => $valueId], $attributeItem['attribute_value_id']);
+                        $productAttribute->productAttributeValues()->createMany($attributeValues);
+                    }
+                }
             }
 
             DB::commit();
