@@ -71,6 +71,18 @@ class ProductController extends Controller
                 }
             }
 
+            if (isset($validatedData['product_related']) && is_array($validatedData['product_related'])) {
+                $product->relatedProducts()->attach(json_decode($validatedData['product_related']));
+            }
+
+            if (isset($validatedData['product_upsell']) && is_array($validatedData['product_upsell'])) {
+                $product->upsellProducts()->attach(json_decode($validatedData['product_upsell']));
+            }
+
+            if (isset($validatedData['product_cross_sell']) && is_array($validatedData['product_cross_sell'])) {
+                $product->crossSellProducts()->attach(json_decode($validatedData['product_cross_sell']));
+            }
+
             DB::commit();
 
             return response()->json(['message' => 'success'], 201);
@@ -88,9 +100,11 @@ class ProductController extends Controller
         try {
             $product = $this->product
                 ->with([
-                    'productAttributes' => function ($query) {
-                        $query->with('productAttributeValues', 'attribute:id,name');
-                    }
+                    'productAttributes.productAttributeValues',
+                    'productAttributes.attribute:id,name',
+                    'relatedProducts:id',
+                    'upsellProducts:id',
+                    'crossSellProducts:id'
                 ])
                 ->select([
                     'id',
@@ -139,6 +153,10 @@ class ProductController extends Controller
             $data['attributes'] = array_values($attributes);
             $data['technical_specifications'] = json_decode($data['technical_specifications'], true);
 
+            $data['related_products'] = isset($data['related_products']) ? collect($data['related_products'])->pluck('id')->toArray() : [];
+            $data['upsell_products'] = isset($data['upsell_products']) ? collect($data['upsell_products'])->pluck('id')->toArray() : [];
+            $data['cross_sell_products'] = isset($data['cross_sell_products']) ? collect($data['cross_sell_products'])->pluck('id')->toArray() : [];
+
             return response()->json($data);
         } catch (\Exception $e) {
             return response()->json([
@@ -174,6 +192,18 @@ class ProductController extends Controller
                         $productAttribute->productAttributeValues()->createMany($attributeValues);
                     }
                 }
+            }
+
+            if (isset($validatedData['product_related']) && !empty($validatedData['product_related'])) {
+                $data->relatedProducts()->sync(json_decode($validatedData['product_related']));
+            }
+
+            if (isset($validatedData['product_upsell']) && !empty($validatedData['product_upsell'])) {
+                $data->upsellProducts()->sync(json_decode($validatedData['product_upsell']));
+            }
+
+            if (isset($validatedData['product_cross_sell']) && !empty($validatedData['product_cross_sell'])) {
+                $data->crossSellProducts()->sync(json_decode($validatedData['product_cross_sell']));
             }
 
             DB::commit();

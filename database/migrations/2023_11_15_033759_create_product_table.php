@@ -100,7 +100,6 @@ return new class extends Migration
             $table->foreign('product_id')->references('id')->on('product')->onDelete('cascade');
             $table->foreign('product_cross_sell_id')->references('id')->on('product')->onDelete('cascade');
         });
-
     }
 
     /**
@@ -111,6 +110,7 @@ return new class extends Migration
         Schema::dropIfExists('product');
         Schema::dropIfExists('product_comments');
         Schema::dropIfExists('product_attribute');
+        Schema::dropIfExists('product_attribute_values');
         Schema::dropIfExists('product_related');
         Schema::dropIfExists('product_upsell');
         Schema::dropIfExists('product_cross_sell');

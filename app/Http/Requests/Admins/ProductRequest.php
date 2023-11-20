@@ -41,6 +41,9 @@ class ProductRequest extends FormRequest
             'description' => 'nullable',
             'meta_title' => 'nullable|max:60',
             'meta_description' => 'nullable|max:160',
+            'product_related' => 'string',
+            'product_upsell' => 'string',
+            'product_cross_sell' => 'string',
         ];
     }
 
