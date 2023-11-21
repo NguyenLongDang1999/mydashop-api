@@ -73,4 +73,12 @@ class Brand extends Model
 
         return $optionList;
     }
+
+    public function getBrandListAll()
+    {
+        return Brand::select('id', 'name', 'image_uri')
+            ->where('status', config('constants.status.active'))
+            ->get()
+            ->toArray();
+    }
 }

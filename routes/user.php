@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\User\BrandController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\User\SliderController;
@@ -42,7 +43,18 @@ Route::prefix('user')->group(function () {
         Route::controller(ProductController::class)
             ->prefix('product')
             ->group(function () {
+                // ** Data List
+                Route::get('data-list-shop', 'dataListShop');
+
                 // ** Details
                 Route::get('{slug}', 'dataDetail');
+            });
+
+        // ** Brand
+        Route::controller(BrandController::class)
+            ->prefix('brand')
+            ->group(function () {
+                // ** Data List
+                Route::get('data-list-all', 'dataListAll');
             });
 });

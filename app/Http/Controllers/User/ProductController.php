@@ -17,6 +17,19 @@ class ProductController extends Controller
         $this->product = $product;
     }
 
+    public function dataListShop(Request $request): JsonResponse
+    {
+        try {
+            $input = $request->input();
+
+            return response()->json($this->product->getProductPaginate($input));
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function dataDetail(string $slug): JsonResponse
     {
         try {

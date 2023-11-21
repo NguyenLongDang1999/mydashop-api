@@ -22,7 +22,8 @@ return [
     'allowed_origins' => [
         env('USER_URL', 'http://localhost:3000'),
         env('FRONTEND_URL', 'http://localhost:5173'),
-        'https://mydashop-cms.vercel.app'
+        'https://mydashop-cms.vercel.app',
+        'https://mydashop-user.vercel.app'
     ],
 
     'allowed_origins_patterns' => [],

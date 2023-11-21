@@ -150,4 +150,59 @@ class Product extends Model
                 'meta_description'
             ]);
     }
+
+    public function getProductPaginate($input): array
+    {
+        $query = Product::with(['category:id,name,slug'])
+            ->select([
+                'id',
+                'name',
+                'slug',
+                'image_uri',
+                'category_id',
+                'price',
+                'in_stock',
+                'special_price',
+                'selling_price',
+                'short_description',
+                'special_price_type',
+                'total_rating'
+            ])
+            ->when(isset($input['brand']), function (Builder $query) use ($input) {
+                $query->where('brand_id', $input['brand']);
+            })
+            ->when(isset($input['attribute']), function (Builder $query) use ($input) {
+                $query->whereHas('productAttributes', function (Builder $query) use ($input) {
+                    $query->whereHas('productAttributeValues', function (Builder $query) use ($input) {
+                        $query->where('attribute_value_id', $input['attribute']);
+                    });
+                });
+            })
+            ->when(isset($input['sort']), function (Builder $query) use ($input) {
+                $sortConditions = [
+                    1 => ['created_at', 'desc'],
+                    2 => ['created_at', 'asc'],
+                    3 => ['name', 'asc'],
+                    4 => ['name', 'desc'],
+                    5 => ['selling_price', 'asc'],
+                    6 => ['selling_price', 'desc'],
+                ];
+
+                if (isset($sortConditions[$input['sort']])) {
+                    list($column, $direction) = $sortConditions[$input['sort']];
+                    $query->orderBy($column, $direction);
+                }
+            })
+            ->where('status', config('constants.status.active'));
+
+        $data['aggregations'] = $query->count();
+
+        $data['data'] = $query
+            ->skip(($input['page'] - 1) * $input['pageSize'])
+            ->take($input['pageSize'])
+            ->get()
+            ->toArray();
+
+        return $data;
+    }
 }
