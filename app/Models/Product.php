@@ -118,4 +118,36 @@ class Product extends Model
 
         return $optionList;
     }
+
+    public function getProductDetail(string $slug)
+    {
+        return Product::whereSlug($slug)
+            ->with([
+                'productAttributes.productAttributeValues.attributeValues:id,value',
+                'productAttributes.attribute:id,name',
+                'brand:id,name',
+                'category:id,name,slug',
+            ])
+            ->where('status', config('constants.status.active'))
+            ->firstOrFail([
+                'id',
+                'sku',
+                'name',
+                'slug',
+                'image_uri',
+                'in_stock',
+                'category_id',
+                'brand_id',
+                'price',
+                'selling_price',
+                'special_price',
+                'special_price_type',
+                'total_rating',
+                'description',
+                'short_description',
+                'technical_specifications',
+                'meta_title',
+                'meta_description'
+            ]);
+    }
 }

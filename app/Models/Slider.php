@@ -40,4 +40,12 @@ class Slider extends Model
 
         return $data;
     }
+
+    public function getSliderList(): array
+    {
+        return Slider::select('id', 'name', 'image_uri')
+            ->where('status', config('constants.status.active'))
+            ->get()
+            ->toArray();
+    }
 }
